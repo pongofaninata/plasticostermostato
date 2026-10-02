@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UFT-8">
+<meta name="viewport"content="widh=divece-whidth, initial-scale=1.0">
+<title>TermostatoGame</title>
+<style>
+//temas
+:root, [data-tema="doom"] {
+  --fondo:      #111;
+  --texto:      #eee;
+  --texto-suave:#aaa;
+  --barra:      #1a0000;
+  --acento:     #c00;
+  --acento2:    #f00;
+  --borde:      #500;
+  --tenue:      #700;
+  --panel:      #1a0a0a;
+  --pulsado:    #300;
+  --rele-off:   #200;
+  --rele-on:    #400;
+  --brillo:     #c005;
+}
+//base
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--fondo); color: var(--texto); font-family: monospace; font-size: 16px; }
+//temas2
+[data-tema="fallout"] {
+  --fondo:#020a04; --texto:#b8ffc8; --texto-suave:#6fcf8a;
+  --barra:#031a0a; --acento:#1eff5a; --acento2:#7dff9f;
+  --borde:#0a5a20; --tenue:#0f8a30; --panel:#04140a;
+  --pulsado:#0a3a18; --rele-off:#031208; --rele-on:#0a4a1a; --brillo:#1eff5a55;
+}
+[data-tema="zelda"] {
+  --fondo:#f4efe0; --texto:#1c2a4a; --texto-suave:#4a5a7a;
+  --barra:#cfdde8; --acento:#b8860b; --acento2:#d4a017;
+  --borde:#9db4c8; --tenue:#7a6a3a; --panel:#e3ebf0;
+  --pulsado:#f0e2a8; --rele-off:#d5dde5; --rele-on:#f3e3a0; --brillo:#d4a01755;
+}
+[data-tema="metroid"] {
+  --fondo:#05000d; --texto:#dfe6ff; --texto-suave:#a89cd0;
+  --barra:#100522; --acento:#00e5ff; --acento2:#ff8a00;
+  --borde:#c2189c; --tenue:#8a5fb8; --panel:#170a2a;
+  --pulsado:#2a1050; --rele-off:#1a0a30; --rele-on:#3a1560; --brillo:#00e5ff55;
+}
+[data-tema="nana"] {
+  --fondo:#F0B1C9; --texto:#7A2240; --texto-suave:#CCA668;
+  --barra:#EDE9E1; --acento:#7a2240; --acento2:#7a2240;
+  --borde:#ede9e1; --tenue:#cca668; --panel:#F8DCE7;
+  --pulsado:#F4C4D8; --rele-off:#EBC3D3; --rele-on:#F7D9A8; --brillo:#B0306055;
+}
+ #top { background: var(--barra); border-bottom: 2px solid var(--acento);
+  padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 9; }
+#top .titulo { color: var(--acento); font-weight: bold; font-size: 15px; }
+#top .info { display: flex; align-items: center; gap: 10px; }
+#temp-top { color: var(--acento); font-size: 20px; font-weight: bold; }
+#dot { width: 12px; height: 12px; border-radius: 50%; background: var(--borde); }
+#dot.on { background: var(--acento); box-shadow: 0 0 8px var(--acento); }
+#btn-tema { background: transparent; border: 1px solid var(--borde);
+  border-radius: 8px; padding: 4px 8px; font-size: 16px; cursor: pointer; }
+  //tab
+#tabs { display: flex; background: var(--barra); border-bottom: 2px solid var(--borde); }
+.tab { flex: 1; padding: 10px 2px; border: none; background: transparent;
+  color: 	var(--tenue); font-family: monospace; font-size: 11px; cursor: pointer; text-align: center; }
+.tab.sel { color: var(--acento); border-bottom: 2px solid var(--acento); }
+//pantalla
+#main { padding: 14px; padding-bottom: 20px; max-width: 480px; margin: 0 auto; }
+.screen { display: none; }
+.screen.on { display: block; }
+//tarjetastext
+.card { background: var(--panel); border: 1px solid var(--borde); border-radius: 10px;
+  padding: 14px; margin-bottom: 12px; }
+.big { font-size: 48px; font-weight: bold; color: var(--acento);
+  text-shadow: 0 0 12px var(--acento); line-height: 1; }
+.med { font-size: 32px; font-weight: bold; color: var(--acento); }
+.lbl { font-size: 11px; color: var(--tenue); margin-bottom: 4px; letter-spacing: 1px; }
+.nota { font-size: 12px; color: var(--tenue); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.div { width: 1px; background: var(--borde); height: 60px; }
+.centro { text-align: center; }
+//botones
+.btn { display: block; width: 100%; padding: 16px 10px; margin-bottom: 10px;
+  border: 2px solid var(--acento); background: transparent; color: var(--acento);
+  font-family: monospace; font-size: 15px; border-radius: 10px; cursor: pointer;
+  letter-spacing: 1px; min-height: 52px; }
+.btn:active { background: var(--pulsado); }
+.btn.red  { border-color: var(--acento2); color: var(--acento2); }
+.btn.dim  { border-color: var(--borde); color: var(--borde); }
+.btn.gold { border-color: gold; color: gold; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.grid2 .btn { margin: 0; }
+ //reles
+ .grid-r { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.rele { background: var(--rele-off); border: 1.5px solid var(--borde); border-radius: 12px;
+  padding: 16px 6px; text-align: center; cursor: pointer; }
+.rele.on  { background: var(--rele-on); border-color: var(--acento); box-shadow: 0 0 10px var(--brillo); }
+.rele.blk { opacity: .4; pointer-events: none; }
+.rele-ico { font-size: 26px; margin-bottom: 6px; }
+.rele-nom { font-size: 11px; color: var(--texto-suave); margin-bottom: 4px; }
+.rele-est { font-size: 14px; font-weight: bold; }
+.rele.on .rele-est { color: var(--acento); }
+.rele:not(.on) .rele-est { color: var(--borde); }
+//modobage
+.badge { display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 12px; border: 1.5px solid var(--borde); color: var(--borde); }
+.badge.man { border-color: #777; color: #777; }
+.badge.ter { border-color: #0f0; color: #0f0; background: #0f01; }
+.badge.cic { border-color: gold; color: gold; background: #ff01; }
+//telemetriarelojciclo
+//tele
+.trow { display: flex; gap: 8px; padding: 2px 0; font-size: 13px; }
+.tk { color: var(--tenue); min-width: 110px; }
+.tv { color: var(--acento); }
+//reloj
+.clock { font-size: 44px; font-weight: bold; color: var(--acento);
+  text-shadow: 0 0 14px var(--acento); letter-spacing: 2px; }
+#ciclo-info { display: none; font-size: 12px; color: var(--acento); background: var(--panel);
+  border: 1px solid var(--borde); border-radius: 8px; padding: 10px; margin-top: 6px; }
+#pau-lbl { display: none; color: #f80; }
+//emergencia
+#emerg { display: none; position: fixed; inset: 0; background: #c00; z-index: 999;
+  flex-direction: column; align-items: center; justify-content: center; color: #fff;
+  font-size: 26px; font-weight: bold; text-align: center; gap: 12px; padding: 20px; }
+#emerg button { margin-top: 16px; padding: 14px 28px; font-size: 15px; background: #fff;
+  color: #c00; border: none; border-radius: 8px; font-family: monospace; cursor: pointer; }
+</style>
+</head>
+<body>
+ 
+<div id="top">
+  <span class="titulo"> TERMOSTATO</span>
+  <div class="info">
+    <button id="btn-tema" onclick="cambiarTema()">🎨</button>
+    <span id="temp-top">--°C</span>
+    <div id="dot"></div>
+  </div>
+</div>
+ 
+<div id="tabs">
+  <button class="tab sel" onclick="ir(0)">DASH</button>
+  <button class="tab"     onclick="ir(1)">TEMP</button>
+  <button class="tab"     onclick="ir(2)">RELOJ</button>
+  <button class="tab"     onclick="ir(3)">SLOTS</button>
+  <button class="tab"     onclick="ir(4)">BLE</button>
+</div>
+ 
+<div id="main">
+ 
+  <!-- DASHBOARD -->
+  <div class="screen on" id="s0">
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="lbl">SENSOR</div>
+          <div class="big" id="d-temp">--°C</div>
+        </div>
+        <div class="div"></div>
+        <div class="centro">
+          <div class="lbl">META</div>
+          <div class="med" id="d-meta">--°C</div>
+        </div>
+      </div>
+    </div>
+ 
+    <div class="card row">
+      <span class="lbl" style="margin:0">MODO</span>
+      <span class="badge man" id="badge-modo">MANUAL</span>
+    </div>
+ 
+    <div class="grid-r">
+      <div class="rele" id="r0" onclick="releClick(1)">
+        <div class="rele-ico">💧</div>
+        <div class="rele-nom">SUMINISTRO</div>
+        <div class="rele-est" id="re0">OFF</div>
+      </div>
+      <div class="rele" id="r1" onclick="releClick(2)">
+        <div class="rele-ico">🔄</div>
+        <div class="rele-nom">RECIRC</div>
+        <div class="rele-est" id="re1">OFF</div>
+      </div>
+      <div class="rele" id="r2" onclick="releClick(3)">
+        <div class="rele-ico">💨</div>
+        <div class="rele-nom">VENTILADOR</div>
+        <div class="rele-est" id="re2">OFF</div>
+      </div>
+      <div class="rele" id="r3" onclick="releClick(4)">
+        <div class="rele-ico">❄️</div>
+        <div class="rele-nom">COMPRESOR</div>
+        <div class="rele-est" id="re3">OFF</div>
+      </div>
+    </div>
+ 
+    <div class="grid2">
+      <button class="btn red" onclick="enviarEmergencia()">⚡ EMERGENCIA</button>
+      <button class="btn"     onclick="send('HORN')">⏸ PAUSA</button>
+    </div>
+  </div>
+ 
+  <!-- TERMOSTATO -->
+  <div class="screen" id="s1">
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="lbl">ACTUAL</div>
+          <div class="big" id="t-temp">--°C</div>
+        </div>
+        <div class="div"></div>
+        <div class="centro">
+          <div class="lbl">META</div>
+          <div class="med" id="t-meta">--°C</div>
+        </div>
+      </div>
+      <div class="nota" style="margin-top:8px" id="t-dif">Dif: --</div>
+    </div>
+ 
+    <div class="grid2">
+      <button class="btn dim" onclick="movA(1,0)">▼ −0.5°C</button>
+      <button class="btn"     onclick="movA(1,1)">▲ +0.5°C</button>
+    </div>
+    <button class="btn" id="btn-modo" onclick="movA(1,2)">MODO TERMOSTATO: APAGADO</button>
+  </div>
+ 
+  <!-- RELOJ -->
+  <div class="screen" id="s2">
+    <div class="card centro">
+      <div class="lbl">HORA LOCAL (teléfono)</div>
+      <div class="clock" id="clk">--:--:--</div>
+      <div class="nota" style="margin-top:6px" id="clk-fecha"></div>
+    </div>
+ 
+    <div class="card">
+      <div class="lbl" style="margin-bottom:8px">HORA DEL ESP32</div>
+      <div class="grid2">
+        <button class="btn" onclick="movA(2,0)">SEL HORA</button>
+        <button class="btn" onclick="movA(2,1)">SEL MIN</button>
+      </div>
+      <div class="grid2">
+        <button class="btn" onclick="send('UP')">▲ SUBIR</button>
+        <button class="btn" onclick="send('DOWN')">▼ BAJAR</button>
+      </div>
+      <button class="btn" onclick="movA(2,2)" style="margin-bottom:0">AM/PM SISTEMA</button>
+    </div>
+ 
+    <div class="card">
+      <div class="lbl" style="margin-bottom:8px">ALARMA</div>
+      <div class="grid2">
+        <button class="btn" onclick="movA(2,3)">SEL HORA ALM</button>
+        <button class="btn" onclick="movA(2,4)">SEL MIN ALM</button>
+      </div>
+      <div class="grid2">
+        <button class="btn" onclick="movA(2,5)">AM/PM ALM</button>
+        <button class="btn" onclick="movA(2,6)">ALARMA ON/OFF</button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- SLOTS -->
+  <div class="screen" id="s3">
+    <div class="card centro">
+      <div class="lbl">SLOT ACTIVO (ESP32)</div>
+      <div class="med" id="sl-nom">--</div>
+      <div class="nota" style="margin-top:4px" id="sl-info">--</div>
+    </div>
+ 
+    <div class="grid2">
+      <button class="btn dim" onclick="send('LEFT')">◀ SLOT ANT</button>
+      <button class="btn"     onclick="send('RIGHT')">SLOT SIG ▶</button>
+    </div>
+    <div class="grid2">
+      <button class="btn dim" onclick="movA(3,0)">▼ −0.5°C</button>
+      <button class="btn"     onclick="movA(3,1)">▲ +0.5°C</button>
+    </div>
+    <button class="btn" id="btn-ciclo" onclick="movA(3,3)">▶ INICIAR CICLO</button>
+    <div id="ciclo-info">
+      ⏱ Ciclo activo — Slot #<span id="ciclo-sl">1</span>
+      <span id="pau-lbl"> · ⏸ PAUSADO</span>
+    </div>
+  </div>
+ 
+  <!-- BLE -->
+  <div class="screen" id="s4">
+    <div class="card centro">
+      <div style="font-size:56px;margin:8px 0" id="ble-ico">📡</div>
+      <div class="med" style="font-size:22px;letter-spacing:2px" id="ble-est">DESCONECTADO</div>
+      <div class="lbl" style="margin-top:4px">TermostatoGame</div>
+    </div>
+    <button class="btn" id="btn-ble" onclick="conectar()" style="margin-bottom:12px">🔗 CONECTAR</button>
+ 
+    <div class="card" id="tele" style="display:none">
+      <div class="lbl" style="margin-bottom:8px">TELEMETRÍA</div>
+      <div class="trow"><span class="tk">Temperatura:</span><span class="tv" id="tl-t">--</span></div>
+      <div class="trow"><span class="tk">Meta:</span><span class="tv" id="tl-m">--</span></div>
+      <div class="trow"><span class="tk">Modo:</span><span class="tv" id="tl-mo">--</span></div>
+      <div class="trow"><span class="tk">Ciclo:</span><span class="tv" id="tl-c">--</span></div>
+      <div class="trow"><span class="tk">Pausa:</span><span class="tv" id="tl-p">--</span></div>
+      <div class="trow"><span class="tk">Relés:</span><span class="tv" id="tl-r">--</span></div>
+      <div class="trow"><span class="tk">Pantalla ESP:</span><span class="tv" id="tl-pan">--</span></div>
+    </div>
+ 
+    <div class="card nota">
+      ⚠️ Solo Chrome en Android o Windows.<br>No funciona en Safari ni Firefox.
+    </div>
+  </div>
+ 
+</div>
+ 
+<!-- EMERGENCIA -->
+<div id="emerg">
+  <div>⚡ EMERGENCIA</div>
+  <div style="font-size:15px">TODO APAGADO</div>
+  <button onclick="cerrarEmerg()">HORN — VOLVER</button>
+</div>
+ 
+<script>
+//estado
+let esp = { temp:0, meta:18, modo:0, slot:0, ciclo:false,
+            sumi:false, recirc:false, vent:false, comp:false, pan:0, pau:false };
+let cursorLocal = 0;   // espejo del cursor del ESP32 en su pantalla actual
+let panPrev = 0;
+ 
+function g(id) { return document.getElementById(id); }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+ 
+//temas
+const TEMAS = ['doom', 'fallout', 'zelda', 'metroid', 'nana'];
+let temaIdx = 0;
+ 
+function aplicarTema(i) {
+  temaIdx = i;
+  document.documentElement.setAttribute('data-tema', TEMAS[i]);
+  try { localStorage.setItem('tema', i); } catch (e) {}
+}
+function cambiarTema() { aplicarTema((temaIdx + 1) % TEMAS.length); }
+ 
+//ble
+let dev = null, rxChar = null, buf = '';
+const SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+const TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+ 
+async function conectar() {
+  if (dev) { dev.gatt.disconnect(); return; }
+  if (!navigator.bluetooth) { alert('Usa Chrome en Android o Windows.'); return; }
+  try {
+    g('ble-est').textContent = 'BUSCANDO...';
+    dev = await navigator.bluetooth.requestDevice({
+      filters: [{ name: 'TermostatoGame' }], optionalServices: [SVC] });
+    dev.addEventListener('gattserverdisconnected', desconectado);
+    const srv = await dev.gatt.connect();
+    const svc = await srv.getPrimaryService(SVC);
+    rxChar    = await svc.getCharacteristic(RX);
+    const tx  = await svc.getCharacteristic(TX);
+    await tx.startNotifications();
+    tx.addEventListener('characteristicvaluechanged', onDato);
+    bleUI(true);
+  } catch (e) {
+    g('ble-est').textContent = 'ERROR';
+    dev = null; rxChar = null;
+    console.error(e);
+  }
+}
+function desconectado() { dev = null; rxChar = null; buf = ''; bleUI(false); }
+function bleUI(on) {
+  g('ble-est').textContent = on ? 'CONECTADO' : 'DESCONECTADO';
+  g('ble-ico').textContent = on ? '🔵' : '📡';
+  g('dot').className       = on ? 'on' : '';
+  g('btn-ble').textContent = on ? '⛔ DESCONECTAR' : '🔗 CONECTAR';
+  g('tele').style.display  = on ? '' : 'none';
+}
+ 
+//recepcion
+function onDato(e) {
+  buf += new TextDecoder().decode(e.target.value);
+  let i;
+  while ((i = buf.indexOf('\n')) >= 0) {
+    const l = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+    if (l) parse(l);
+  }
+  if (/Pau:\d\s*$/.test(buf)) { parse(buf.trim()); buf = ''; }
+  if (buf.length > 300) buf = '';
+}
+ 
+function parse(raw) {
+  if (!raw.includes('|')) return;
+  const m = {};
+  raw.split('|').forEach(p => {
+    const kv = p.split(':');
+    if (kv.length === 2) m[kv[0].trim()] = kv[1].trim();
+  });
+  const n = (k, d) => { const v = parseFloat(m[k]); return isNaN(v) ? d : v; };
+  const b = k => m[k] === '1';
+  esp.temp   = n('Temp', esp.temp);
+  esp.meta   = n('Meta', esp.meta);
+  esp.modo   = Math.max(0, Math.min(2, n('Modo', esp.modo) | 0));
+  esp.slot   = Math.max(0, Math.min(4, n('Slot', esp.slot) | 0));
+  esp.ciclo  = b('Ciclo');
+  esp.sumi   = b('Sumi');
+  esp.recirc = b('Recirc');
+  esp.vent   = b('Vent');
+  esp.comp   = b('Comp');
+  esp.pan    = n('Pan', 0) | 0;
+  esp.pau    = b('Pau');
+  if (esp.pan !== panPrev) { cursorLocal = 0; panPrev = esp.pan; sincTab(esp.pan); }
+  ui();
+}
+ 
+//envio
+let cola = [], enviando = false;
+function send(c) { cola.push(c); flush(); }
+async function flush() {
+  if (enviando || cola.length === 0) return;
+  enviando = true;
+  while (cola.length > 0) {
+    const c = cola.shift();
+    if (rxChar) {
+      try { await rxChar.writeValue(new TextEncoder().encode(c + '\n')); }
+      catch (e) { console.error('send', c, e); }
+    }
+    await sleep(120);
+  }
+  enviando = false;
+}
+ 
+//+a
+//botones por pantalla esp
+const NB = [7, 5, 9, 6, 2];
+function movA(pan, dest) {
+  if (esp.pan !== pan) { navEsp(pan); return; }
+  const total = NB[pan] || 7;
+  const pasos = (dest - cursorLocal + total) % total;
+  for (let i = 0; i < pasos; i++) {
+    cola.push('DOWN');
+    cursorLocal = (cursorLocal + 1) % total;
+  }
+  cola.push('A');
+  flush();
+}
+ 
+//reles del dashboard 
+function releClick(pos) {
+  if (esp.modo !== 0) return;
+  movA(0, pos);
+}
+ 
+//navegacion
+function navEsp(dest) {
+  cursorLocal = 0;
+  if (!rxChar) { sincTab(dest); return; }
+  const actual = esp.pan;
+  if (dest === actual) return;
+  const fwd = (dest - actual + 5) % 5;
+  const bwd = (actual - dest + 5) % 5;
+  const c = fwd <= bwd ? 'C' : 'B';
+  const n = Math.min(fwd, bwd);
+  for (let i = 0; i < n; i++) cola.push(c);
+  flush();
+  sincTab(dest);
+}
+function ir(i) { navEsp(i); }
+ 
+function sincTab(i) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('sel'));
+  g('s' + i).classList.add('on');
+  document.querySelectorAll('.tab')[i].classList.add('sel');
+}
+ 
+//emergenciaa
+function enviarEmergencia() {
+  g('emerg').style.display = 'flex';
+  send('LIGHT');
+}
+function cerrarEmerg() {
+  g('emerg').style.display = 'none';
+  send('HORN');
+}
+ 
+//interfaz
+const MODOS   = ['MANUAL', 'TERMOSTATO', 'CICLO AUTO'];
+const CLS     = ['man', 'ter', 'cic'];
+const SLOTS_N = ['Enfriar', 'Reposo', 'Shock', 'Manten', 'Proceso'];
+const SLOTS_T = [15, 10, 5, 18, 20];
+const SLOTS_D = [120, 60, 30, 90, 60];
+const PAN_N   = ['Dashboard', 'Termostato', 'Reloj', 'Slots', 'BLE'];
+ 
+function ui() {
+  const t = esp.temp.toFixed(1) + '°C';
+  const m = esp.meta.toFixed(1) + '°C';
+ 
+  g('temp-top').textContent = t;
+  g('d-temp').textContent   = t;
+  g('d-meta').textContent   = m;
+  g('t-temp').textContent   = t;
+  g('t-meta').textContent   = m;
+  g('t-dif').textContent    = 'Dif: ' + (esp.temp - esp.meta).toFixed(1) + '°C';
+ 
+  const bm = g('badge-modo');
+  bm.textContent = MODOS[esp.modo];
+  bm.className   = 'badge ' + CLS[esp.modo];
+ 
+  [['r0', 're0', esp.sumi], ['r1', 're1', esp.recirc],
+   ['r2', 're2', esp.vent], ['r3', 're3', esp.comp]].forEach(([id, eid, on]) => {
+    g(id).className = 'rele' + (on ? ' on' : '') + (esp.modo !== 0 ? ' blk' : '');
+    g(eid).textContent = on ? 'ON' : 'OFF';
+  });
+ 
+  g('btn-modo').textContent = 'MODO TERMOSTATO: ' + (esp.modo === 1 ? 'ACTIVADO' : 'APAGADO');
+ 
+  g('btn-ciclo').textContent    = esp.ciclo ? '⏹ DETENER CICLO' : '▶ INICIAR CICLO';
+  g('btn-ciclo').className      = esp.ciclo ? 'btn red' : 'btn';
+  g('ciclo-info').style.display = esp.ciclo ? 'block' : 'none';
+  g('ciclo-sl').textContent     = esp.slot + 1;
+  g('pau-lbl').style.display    = esp.pau ? 'inline' : 'none';
+ 
+  g('sl-nom').textContent  = SLOTS_N[esp.slot] || '--';
+  g('sl-info').textContent = SLOTS_T[esp.slot] + '°C / ' + SLOTS_D[esp.slot] + ' min';
+ 
+  g('tl-t').textContent   = t;
+  g('tl-m').textContent   = m;
+  g('tl-mo').textContent  = MODOS[esp.modo];
+  g('tl-c').textContent   = esp.ciclo ? 'ACTIVO' : 'DETENIDO';
+  g('tl-p').textContent   = esp.pau ? 'SÍ' : 'NO';
+  g('tl-r').textContent   = [esp.sumi ? 'SUMI' : null, esp.recirc ? 'RECIRC' : null,
+    esp.vent ? 'VENT' : null, esp.comp ? 'COMP' : null].filter(Boolean).join(' ') || 'ninguno';
+  g('tl-pan').textContent = PAN_N[esp.pan] || esp.pan;
+}
+ 
+//relojlocal
+function tick() {
+  const n = new Date(), pad = x => String(x).padStart(2, '0');
+  let h = n.getHours(); const ap = h < 12 ? 'AM' : 'PM'; h = h % 12 || 12;
+  g('clk').textContent       = `${pad(h)}:${pad(n.getMinutes())}:${pad(n.getSeconds())} ${ap}`;
+  g('clk-fecha').textContent = `${n.getDate()}/${n.getMonth() + 1}/${n.getFullYear()}`;
+}
+ 
+//inicio
+try { aplicarTema(parseInt(localStorage.getItem('tema')) || 0); } catch (e) { aplicarTema(0); }
+setInterval(tick, 1000); tick();
+ui();
+</script>
+</body>
+</html>
+ 
+
